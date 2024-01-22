@@ -1,6 +1,28 @@
 import { DataSource } from "typeorm";
 import { Board } from "./Board.postgres";
 
+import { ApolloServer } from "@apollo/server";
+import { startStandaloneServer } from "@apollo/server/standalone";
+
+// api-docs
+const typeDefs = `#graphql
+  type Query {
+    hello: String
+  }
+`;
+
+// api
+const resolvers = {
+  Query: {
+    hello: () => "world",
+  },
+};
+
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+});
+
 const AppDataSource = new DataSource({
   type: "postgres",
   host: "127.0.0.1",
@@ -16,6 +38,9 @@ const AppDataSource = new DataSource({
 AppDataSource.initialize()
   .then(() => {
     console.log("DB접속에 성공했습니다.");
+    startStandaloneServer(server).then(() => {
+      console.log("start graphql server");
+    });
   })
   .catch((error) => {
     console.log("DB접속에 실패했습니다.");
