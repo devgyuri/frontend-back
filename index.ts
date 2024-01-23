@@ -6,21 +6,69 @@ import { startStandaloneServer } from "@apollo/server/standalone";
 
 // api-docs
 const typeDefs = `#graphql
+  input createBoardInput {
+    writer: String
+    title: String
+    contents: String
+  }
+
+  type MyBoard {
+    number: Int
+    writer: String
+    title: String
+    contents: String
+  }
+
   type Query {
-    hello: String
+    fetchBoards: [MyBoard]
+  }
+
+  type Mutation {
+    #backend example
+    #createBoard(writer: String, title: String, contents: String): String
+
+    #backend practice
+    createBoard(createBoardInput: createBoardInput): String
   }
 `;
 
 // api
 const resolvers = {
   Query: {
-    hello: () => "world",
+    fetchBoards: async () => {
+      const result = await Board.find();
+      console.log(result);
+      return result;
+    },
+  },
+  Mutation: {
+    createBoard: async (parent: any, args: any, context: any, info: any) => {
+      await Board.insert({
+        ...args.createBoardInput,
+
+        // writer: args.createBoardInput.writer,
+        // title: args.createBoardInput.title,
+        // contents: args.createBoardInput.contents,
+      });
+      return "등록이 완료되었습니다.";
+    },
+
+    // updateBoard: async () => {
+    //   await Board.update({number: 3}, {writer: "영희"});
+    // },
+
+    // deleteBoard: async () => {
+    //   await Board.delete({number: 3});
+    //   // await Board.update({number: 3}, {isDeleted: true});
+    //   // await Board.update({number: 3}, {deletedAt: new Date()});
+    // }
   },
 };
 
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  // cors: true,
 });
 
 const AppDataSource = new DataSource({
